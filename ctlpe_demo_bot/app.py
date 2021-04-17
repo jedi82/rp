@@ -11,6 +11,7 @@ bot = telegram.Bot(token=TOKEN)
 # start the flask app
 app = Flask(__name__)
 
+
 @app.route('/{}'.format(TOKEN), methods=['POST'])
 def respond():
     # retrieve the message in JSON and then transform it to Telegram object
@@ -29,6 +30,7 @@ def respond():
     bot.sendMessage(chat_id=chat_id, text=response, reply_to_message_id=msg_id)
     return 'ok'
 
+
 @app.route('/setwebhook', methods=['GET', 'POST'])
 def set_webhook():
     # we use the bot object to link the bot to our app which live
@@ -39,3 +41,14 @@ def set_webhook():
         return "webhook setup ok"
     else:
         return "webhook setup failed"
+
+
+@app.route('/')
+def index():
+    return '.'
+
+
+if __name__ == '__main__':
+    # note the threaded arg which allow
+    # your app to have more than one thread
+    app.run(threaded=True)
