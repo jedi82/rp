@@ -1,7 +1,7 @@
 from flask import Flask, request
 import telegram
-from telebot.credentials import bot_token, bot_user_name, url
-from telebot.mastermind import get_response
+from ctlpe_demo_bot.credentials import bot_token, bot_user_name, url
+from ctlpe_demo_bot.mastermind import get_response
 
 global bot
 global TOKEN
