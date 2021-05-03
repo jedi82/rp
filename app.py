@@ -1,54 +1,64 @@
-from flask import Flask, request
-import telegram
-from ctlpe_demo_bot.credentials import bot_token, bot_user_name, url
-from ctlpe_demo_bot.mastermind import get_response
+import logging
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import os
+from ctlpe_demo_bot.credentials import bot_token, url
+PORT = int(os.environ.get('PORT', 5000))
 
-global bot
-global TOKEN
+# Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 TOKEN = bot_token
-bot = telegram.Bot(token=TOKEN)
 
-# start the flask app
-app = Flask(__name__)
+# Define a few command handlers. These usually take the two arguments update and
+# context. Error handlers also receive the raised TelegramError object in error.
+def start(update, context):
+    """Send a message when the command /start is issued."""
+    update.message.reply_text('Hi!')
 
+def help(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Help!')
 
-@app.route('/{}'.format(TOKEN), methods=['POST'])
-def respond():
-    # retrieve the message in JSON and then transform it to Telegram object
-    update = telegram.Update.de_json(request.get_json(force=True), bot)
-    # get the chat_id to be able to respond to the same user
-    chat_id = update.message.chat.id
-    # get the message id to be able to reply to this specific message
-    msg_id = update.message.message_id
-    # Telegram understands UTF-8, so encode text for unicode compatibility
-    text = update.message.text.encode('utf-8').decode()
-    print("got text message :", text)
-    # here we call our super AI
-    response = get_response(text)
-    # now just send the message back
-    # notice how we specify the chat and the msg we reply to
-    bot.sendMessage(chat_id=chat_id, text=response, reply_to_message_id=msg_id)
-    return 'ok'
+def echo(update, context):
+    """Echo the user message."""
+    update.message.reply_text(update.message.text)
 
+def error(update, context):
+    """Log Errors caused by Updates."""
+    logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-@app.route('/setwebhook', methods=['GET', 'POST'])
-def set_webhook():
-    # we use the bot object to link the bot to our app which live
-    # in the link provided by URL
-    s = bot.setWebhook('{URL}{HOOK}'.format(URL=url, HOOK=TOKEN))
-    # something to let us know things work
-    if s:
-        return "webhook setup ok"
-    else:
-        return "webhook setup failed"
+def main():
+    """Start the bot."""
+    # Create the Updater and pass it your bot's token.
+    # Make sure to set use_context=True to use the new context based callbacks
+    # Post version 12 this will no longer be necessary
+    updater = Updater(TOKEN, use_context=True)
 
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
 
-@app.route('/')
-def index():
-    return '.'
+    # on different commands - answer in Telegram
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help))
 
+    # on noncommand i.e message - echo the message on Telegram
+    dp.add_handler(MessageHandler(Filters.text, echo))
+
+    # log all errors
+    dp.add_error_handler(error)
+
+    # Start the Bot
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=TOKEN)
+    updater.bot.setWebhook(url + TOKEN)
+
+    # Run the bot until you press Ctrl-C or the process receives SIGINT,
+    # SIGTERM or SIGABRT. This should be used most of the time, since
+    # start_polling() is non-blocking and will stop the bot gracefully.
+    updater.idle()
 
 if __name__ == '__main__':
-    # note the threaded arg which allow
-    # your app to have more than one thread
-    app.run(threaded=True)
+    main()
