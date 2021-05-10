@@ -146,7 +146,7 @@ def main() -> None:
     dispatcher.add_handler(conv_handler)
 
     # Start the Bot
-    updater.start_polling()
+    updater.start_webhook(listen=url, port=int(8443), url_path=bot_token)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
