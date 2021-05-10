@@ -1,8 +1,3 @@
-import logging
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import os
-from ctlpe_demo_bot.credentials import bot_token, url
-
 """
 First, a few callback functions are defined. Then, those functions are passed to
 the Dispatcher and registered at their respective places.
@@ -16,8 +11,9 @@ bot.
 """
 
 import logging
+import os
 from typing import Dict
-from ctlpe_demo_bot.credentials import bot_token, bot_user_name, url
+from ctlpe_demo_bot.credentials import bot_token, url
 from telegram import ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
 from telegram.ext import (
     Updater,
@@ -27,6 +23,8 @@ from telegram.ext import (
     ConversationHandler,
     CallbackContext,
 )
+
+PORT = int(os.environ.get('PORT', 8443))
 
 # Enable logging
 logging.basicConfig(
@@ -146,8 +144,10 @@ def main() -> None:
     dispatcher.add_handler(conv_handler)
 
     # Start the Bot
-    updater.start_webhook(listen="0.0.0.0", port=int(8443), url_path=bot_token)
-    updater.bot.setWebhook(url + bot_token)
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(PORT),
+                          url_path=bot_token,
+                          webhook_url=url + bot_token)
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
