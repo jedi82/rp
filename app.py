@@ -52,61 +52,25 @@ def facts_to_str(user_data: Dict[str, str]) -> str:
     return "\n".join(facts).join(['\n', '\n'])
 
 
-def start(update: Update, _: CallbackContext) -> int:
+def start(update: Update, _: CallbackContext) -> None:
+    """Send a message when the command /start is issued."""
     update.message.reply_text(
-        "Hi! My name is Doctor Botter. I will hold a more complex conversation with you. "
-        "Why don't you tell me something about yourself?",
-        reply_markup=markup,
+        "Hi! I am a work in progress bot. My job is to help this awesome CTLPE Intake 5 group, "
+        "especially with deadlines. Type /deadlines to start. For list of supported commands, type /help.",
+        # reply_markup=markup,
     )
 
-    return CHOOSING
+
+def help_command(update: Update, _: CallbackContext) -> None:
+    """Send a message when the command /help is issued."""
+    update.message.reply_text("These are the list of commands supported. \n\n /deadlines. \n\n "
+                              "Hey! I am still being enhanced, more features to come...!")
 
 
-def regular_choice(update: Update, context: CallbackContext) -> int:
-    text = update.message.text
-    context.user_data['choice'] = text
-    update.message.reply_text(f'Your {text.lower()}? Yes, I would love to hear about that!')
-
-    return TYPING_REPLY
-
-
-def custom_choice(update: Update, _: CallbackContext) -> int:
-    update.message.reply_text(
-        'Alright, please send me the category first, for example "Most impressive skill"'
-    )
-
-    return TYPING_CHOICE
-
-
-def received_information(update: Update, context: CallbackContext) -> int:
-    user_data = context.user_data
-    text = update.message.text
-    category = user_data['choice']
-    user_data[category] = text
-    del user_data['choice']
-
-    update.message.reply_text(
-        "Neat! Just so you know, this is what you already told me:"
-        f"{facts_to_str(user_data)} You can tell me more, or change your opinion"
-        " on something.",
-        reply_markup=markup,
-    )
-
-    return CHOOSING
-
-
-def done(update: Update, context: CallbackContext) -> int:
-    user_data = context.user_data
-    if 'choice' in user_data:
-        del user_data['choice']
-
-    update.message.reply_text(
-        f"I learned these facts about you: {facts_to_str(user_data)}Until next time!",
-        reply_markup=ReplyKeyboardRemove(),
-    )
-
-    user_data.clear()
-    return ConversationHandler.END
+def deadlines_command(update: Update, _: CallbackContext) -> None:
+    """Produce a list of upcoming deadlines"""
+    update.message.reply_text("Polymall Module 1.10 - 24 May 2359 \n"
+                              "Lesson Plan submission - end of Sem 1\n")
 
 
 def main() -> None:
@@ -116,32 +80,10 @@ def main() -> None:
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
-    # Add conversation handler with the states CHOOSING, TYPING_CHOICE and TYPING_REPLY
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
-        states={
-            CHOOSING: [
-                MessageHandler(
-                    Filters.regex('^(Age|Favourite colour|Number of siblings)$'), regular_choice
-                ),
-                MessageHandler(Filters.regex('^Something else...$'), custom_choice),
-            ],
-            TYPING_CHOICE: [
-                MessageHandler(
-                    Filters.text & ~(Filters.command | Filters.regex('^Done$')), regular_choice
-                )
-            ],
-            TYPING_REPLY: [
-                MessageHandler(
-                    Filters.text & ~(Filters.command | Filters.regex('^Done$')),
-                    received_information,
-                )
-            ],
-        },
-        fallbacks=[MessageHandler(Filters.regex('^Done$'), done)],
-    )
-
-    dispatcher.add_handler(conv_handler)
+    # dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("deadlines", deadlines_command))
 
     # Start the Bot
     updater.start_webhook(listen="0.0.0.0",

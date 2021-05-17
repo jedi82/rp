@@ -1,4 +1,4 @@
 
-bot_token = "1788370768:AAH273lDhtFGxv0RE3Y7heHvtxWjiyrvI44"
-bot_user_name = "ctlpe_demo_bot"
+bot_token = "1743184715:AAGRzN73vVGthRxBwcU9dvJvvCNOx3ToZUY"
+bot_user_name = "ctlpe_intake5_bot"
 url = "https://ctlpe-telegram-bot.herokuapp.com/"
