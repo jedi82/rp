@@ -69,7 +69,7 @@ def help_command(update: Update, _: CallbackContext) -> None:
 
 def deadlines_command(update: Update, _: CallbackContext) -> None:
     """Produce a list of upcoming deadlines"""
-    update.message.reply_text("Polymall Module 1.10 - 24 May 2359 \n"
+    update.message.reply_text("Polymall Module 1.10 - 4 Jun 2359 \n"
                               "Lesson Plan submission - end of Sem 1\n")
 
 
